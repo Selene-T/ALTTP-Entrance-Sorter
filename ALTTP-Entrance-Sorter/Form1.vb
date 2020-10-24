@@ -7,6 +7,7 @@
     Private loDoors As New List(Of Point)
     Private loZones As New List(Of Rectangle)
     Private loRooms As New List(Of Rectangle)
+    Private loSettings As New List(Of Rectangle)
     Private firstReDim As Boolean = True
     Private arrZ2R(0) As Short
     Private arrR2Z(0) As Short
@@ -58,6 +59,10 @@
         Dim iWidth As Double = map.Width / 32
         Dim iheight As Double = map.Height / 20
         loRooms.Clear()
+        loSettings.Clear()
+        For i = 0 To 2
+            loSettings.Add(New Rectangle(Math.Floor(iWidth * 3 * i), Math.Floor(0), Math.Floor(iWidth * 3 - 1), Math.Floor(iheight - 1)))
+        Next
         For i = 3 To 28
             loRooms.Add(New Rectangle(Math.Floor(iWidth * i), Math.Floor(iheight), Math.Floor(iWidth - 1), Math.Floor(iheight - 1)))
         Next
@@ -267,6 +272,18 @@
     End Sub
 
     Private Sub map_MouseClick(sender As Object, e As MouseEventArgs) Handles map.MouseClick
+        For i As Int16 = 0 To loSettings.Count - 1
+            If loSettings(i).Contains(e.Location) Then
+                Select Case i
+                    Case 0
+                        writeVars()
+                    Case 1
+                        readVars()
+                    Case 2
+                        clearVars()
+                End Select
+            End If
+        Next
         For i As Int16 = loZones.Count - 1 To 0 Step -1
             If loZones(i).Contains(e.Location) Then
                 If e.Button = MouseButtons.Left Then
@@ -348,5 +365,69 @@
         iPenR.Dispose()
         iPenG.Dispose()
         iGfx.Dispose()
+    End Sub
+
+    Private Sub writeVars()
+        Using fOutput As IO.StreamWriter = New IO.StreamWriter("save.dat")
+            For i As Int16 = 0 To arrR2Z.Count - 1
+                If i < arrR2Z.Count - 1 Then
+                    fOutput.Write(arrR2Z(i).ToString & ",")
+                Else
+                    fOutput.WriteLine(arrR2Z(i).ToString)
+                End If
+            Next
+            For i As Int16 = 0 To arrZ2R.Count - 1
+                If i < arrZ2R.Count - 1 Then
+                    fOutput.Write(arrZ2R(i).ToString & ",")
+                Else
+                    fOutput.WriteLine(arrZ2R(i).ToString)
+                End If
+            Next
+            For i As Int16 = 0 To arrSkips.Count - 1
+                If i < arrSkips.Count - 1 Then
+                    fOutput.Write(arrSkips(i).ToString & ",")
+                Else
+                    fOutput.WriteLine(arrSkips(i).ToString)
+                End If
+            Next
+            fOutput.Close()
+        End Using
+    End Sub
+
+    Private Sub readVars()
+        On Error GoTo fileNotFound
+        Using fInput As IO.StreamReader = New IO.StreamReader("save.dat")
+            Dim line1 As String = fInput.ReadLine
+            Dim lineR2Z() As String = Split(line1, ",")
+            Dim line2 As String = fInput.ReadLine
+            Dim lineZ2R() As String = Split(line2, ",")
+            Dim line3 As String = fInput.ReadLine
+            Dim lineSkips() As String = Split(line3, ",")
+            For i As Int16 = 0 To arrR2Z.Count - 1
+                arrR2Z(i) = Convert.ToInt16(lineR2Z(i))
+            Next
+            For i As Int16 = 0 To arrZ2R.Count - 1
+                arrZ2R(i) = Convert.ToInt16(lineZ2R(i))
+            Next
+            For i As Int16 = 0 To arrSkips.Count - 1
+                arrSkips(i) = Convert.ToByte(lineSkips(i))
+            Next
+            fInput.Close()
+        End Using
+        map.Invalidate()
+fileNotFound:
+    End Sub
+
+    Private Sub clearVars()
+        For i As Int16 = 0 To arrR2Z.Count - 1
+            arrR2Z(i) = -1
+        Next
+        For i As Int16 = 0 To arrZ2R.Count - 1
+            arrZ2R(i) = -1
+        Next
+        For i As Int16 = 0 To arrSkips.Count - 1
+            arrSkips(i) = 0
+        Next
+        map.Invalidate()
     End Sub
 End Class

@@ -41,7 +41,7 @@ Partial Class frmES
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.BackColor = System.Drawing.Color.Black
         Me.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None
-        Me.ClientSize = New System.Drawing.Size(512, 320)
+        Me.ClientSize = New System.Drawing.Size(528, 359)
         Me.Controls.Add(Me.map)
         Me.MinimumSize = New System.Drawing.Size(528, 359)
         Me.Name = "frmES"
